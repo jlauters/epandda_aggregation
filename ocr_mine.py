@@ -1,72 +1,41 @@
+# OCR Miner
+#
+# @author: Jon Lauters
+#
+# Script to query PBDB and BHL API's to match PBDB Biblio Reference Records to BHL OCR Text.
+# Found OCR Text is stored in a MongoDB collection called `pbdb_ocr`
+
 import requests
 import json
 import re
 import unidecode
 from pymongo import MongoClient
 
+# Config to load BHL API Key
 config = json.load(open('./config.json'))
-
 
 # MongoDB Setup
 client = MongoClient("mongodb://localhost:27017")
 db = client.test
 
+# Variable inits
 pbdb_titles = []
-
-state    = "colorado"
-locality = "florissant"
 order    = "coleoptera"
-
 bhl_base = "http://www.biodiversitylibrary.org/api2/httpquery.ashx"
-bhl_key = config.bhl_key 
+bhl_key = config['bhl_key'] 
 
+# Step One - Get Bib References from PBDB for order
 pbdb = requests.get('https://paleobiodb.org/data1.2/taxa/refs.json?base_name=' + order + '&textresult')
 if 200 == pbdb.status_code:
 
   pbdb_json = json.loads( pbdb.content )
   for pb in pbdb_json['records']:
 
-    if pb.has_key("tit"):
+    # PBDB Data Objects do not have a consistent return format.
+    # Checking if record has journal title and publication title before making BHL API Call
+    if pb.has_key("tit") and pb.has_key("pbt"):
 
-      if state in pb['tit'].lower() and locality in pb['tit'].lower():
-        print "[" + pb['oid'] + "] Publication: " + pb['pbt']
-        print "[" + pb['oid'] + "] Article Title: " + pb['tit'] + " matches search terms" 
-        print "[" + pb['oid'] + "] Author: " + pb['al1']
-        print "[" + pb['oid'] + "] Year: " + pb['pby']
-
-        print "https://paleobiodb.org/data1.1/refs/single.json?id=" + pb['oid'].replace('ref:', '') + "&show=both"
-
-        # Hardcoded List of Families from BHL 
-        families = []
-        if pb['oid'].replace('ref:', '') == "5139":
-          families.append("Carabidae")
-          families.append("Dytiscidae")
-          families.append("Hydrophilidae")
-          families.append("Silphidae")
-          families.append("Staphylinidae")
-          families.append("Coccinellidae")
-          families.append("Erotylidae")
-          families.append("Cucujidae")
-          families.append("Dermestidae")
-          families.append("Cryptophagidae")
-          families.append("Nitidulidae")
-          families.append("Trogositidae")
-          families.append("Byrrhidae")
-          families.append("Parnidae")
-          families.append("Elateridae")
-          families.append("Buprestidae")
-          families.append("Lampyridae")
-          families.append("Ptinidae")
-          families.append("Scarabaeidae")
-          families.append("Cerambyciade")
-          families.append("Chrysomelidae")
-          families.append("Bruchidae")
-          families.append("Tenebrionidae")
-          families.append("Cistelidae")
-          families.append("Meloidea")
-          families.append("Rhipiphoridae")
-
-
+          # Step Two - Check if Publication is found in BHL
           bhl = requests.get(bhl_base + "?op=TitleSearchSimple&title=" + pb['pbt'] + "&apikey=" + bhl_key + "&format=json")
           if 200 == bhl.status_code:
             bhl_json = json.loads( bhl.content )
@@ -74,6 +43,7 @@ if 200 == pbdb.status_code:
             for bhl_title in bhl_json['Result']:
               if pb['pbt'] in bhl_title['FullTitle']:
 
+                # Step Three - Get title items for matched publication title
                 title_items = requests.get(bhl_base + "?op=GetTitleItems&titleid=" + str( bhl_title['TitleID'] ) + "&apikey=" + bhl_key + "&format=json")
                 if 200 == title_items.status_code:
                   items_json = json.loads( title_items.content )
@@ -82,10 +52,17 @@ if 200 == pbdb.status_code:
                     if "v." + pb['vol'] + " (" + pb['pby'] + ")" in item['Volume']:
                       print "Volume match, get item metadata for " + str(item['ItemID'])
 
+                      # Step Four - If we found the same volume, get the metadata for that Title Item ( includes pages with OCR Text )
                       params = "&pages=t&parts=t&ocr=t&apikey=" + bhl_key + "&format=json"
                       meta_items = requests.get(bhl_base + "?op=GetItemMetadata&itemid=" + str(item['ItemID']) + params)
                       if 200 == meta_items.status_code:
                         meta_json = json.loads( meta_items.content )
+
+
+
+                        # Step Five - Iterate through the returned Pages for title item.
+                        # If page OCR has sufficient content clean it up and look for article title. 
+                        # If article title is found, stuff all OCR Text into a MongoDB document in the pbdb_ocr collection.
 
                         add_to_db = False
                         ocr_blob = ""
