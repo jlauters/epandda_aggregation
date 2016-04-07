@@ -21,6 +21,7 @@ class Annotation(object):
 
     # TODO: Check if body has doi
     # TODO: Allow for body to pass in annotator?
+    # TODO: Determine if we need to also push this into a mongoDB? Maybe a flag on the constructor?
 
     return json.dumps({
       "@context": "http://www.w3.org/ns/oa-context-20130208.json",
