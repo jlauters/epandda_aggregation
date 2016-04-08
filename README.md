@@ -12,3 +12,6 @@ Simple class to construct OpenAnnotation style JSON-LD objects fed from the matc
 
 #### person.py
 Discovery script to look into feasability of doing data aggregation by person name.
+
+#### dispatcher.py
+API Skeleton
