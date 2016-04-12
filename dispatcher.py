@@ -46,13 +46,16 @@ def publication():
   author          = request.args.get('author')
   state_prov      = request.args.get('state_province')
   locality        = request.args.get('locality')
-  
+
+  # Either Way this is going to call iDigBio and PBDB ( BHL )  
   if scientific_name or order:
     return "Searching Publications from specimen name. SciName: " + scientific_name + " order: " + order
   elif journal or article or author:
     return "Searching Publications from publication. Journal: " + journal + " article: " + article
   else:
     return "Required Params Missing!"
+
+
 
 # Fossil / Modern specimen matching based on taxonomic heirarchy
 @app.route("/api/v1/fossilmodern", methods=['GET'])
