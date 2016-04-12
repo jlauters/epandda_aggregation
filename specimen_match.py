@@ -43,7 +43,7 @@ if 200 == idigbio.status_code:
       identRemarks = idig['data']['dwc:identificationRemarks'].lower()
 
     biblioCitation = ""
-    if "dcterms:bibliographicCitation'" in idig['data']:
+    if "dcterms:bibliographicCitation" in idig['data']:
       biblioCitation   = idig['data']['dcterms:bibliographicCitation'].lower()
 
     occurrenceRemark = ""
