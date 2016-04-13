@@ -5,7 +5,8 @@
 # Flask microframework driven RESTful API Dispatcher
 
 import matching
-from flask import Flask, request
+import json
+from flask import Flask, request, Response
 app = Flask(__name__)
 
 
@@ -51,7 +52,14 @@ def publication():
   # Either Way this is going to call iDigBio and PBDB ( BHL )  
   if scientific_name or order:
     search_term = scientific_name if scientific_name else order
-    matching.matchName( search_term )
+    matches = matching.matchName( search_term )
+
+    retval = {}
+    retval['status'] = "okay"
+    retval['results'] = matches
+
+    resp = Response(response=json.dumps(retval), status=200, mimetype="application/json")
+    return resp 
 
   elif journal or article or author:
     return "Searching Publications from publication. Journal: " + journal + " article: " + article
