@@ -9,37 +9,40 @@ import time
 import datetime
 import uuid
 
-def annotation(target, body):
+def create(target, body):
 
   # Timestamp and annotation uuid
-  uuid = uuid.uuid4()
-  datestamp = datetime.datetime.fromtimestamp( time.gmtime() ).strftime('%Y-%m-%d %H:%M:%S %Z')
+  anno_uuid = uuid.uuid4()
+  datestamp = datetime.datetime.fromtimestamp( time.time() ).strftime('%Y-%m-%d %H:%M:%S %Z')
+
+  target_uuid = str(target['uuid'])
 
   # TODO: Check if body has doi
   # TODO: Allow for body to pass in annotator?
   # TODO: Determine if we need to also push this into a mongoDB? Maybe a flag on the constructor?
 
-  return json.dumps({
-    "@context": "http://www.w3.org/ns/oa-context-20130208.json",
-    "@id": uuid,
-    "@type": "oa:Annotation",
-    "annotatedAt": datestamp,
-    "annotatedBy": {
-      "@id": "ePANNDA Annotation Service ID",
-      "@type": "foaf:Person",
-      "mbox": { "@id": "mailto:annotation@epandda.org" },
-      "name": "ePANDDA Annotation Bot"
-    },
-    "hasBody": {
-      "@id": body['doi'],
-      "@type": ["dwc:Occurrence", "dctype:Text"],
-      "chars": body['tit'],
-    },
-    "hasTarget": {
-      "@id": "urn:uuid:" + target.uuid,
-      "@type": "oa:SpecificResource",
-      "hasSource": {
-        "@id": "http://search.idigbio.org/v2/view/records/" + target.uuid
-      }
-    }
-  })
+  open_annotation = {}
+  open_annotation['@context'] = "http://www.w3.org/ns/oa-context-20130208.json" 
+  open_annotation['@id'] = str(anno_uuid)
+  open_annotation['@type'] = "oa:Annotation"
+  open_annotation['annotatedAt'] = str(datestamp)
+  open_annotation['annotatedBy'] = {
+    "@id": "ePANNDA Annotation Service ID", 
+    "@type": "foaf:Person",
+    "mbox": { "@id": "mailto:annotation@epandda.org" },
+    "name": "ePANDDA Annotation Bot"
+  }
+ 
+  open_annotation['hasBody'] = {
+    "@id": body['doi'],
+    "@type": ["dwc:Occurrence", "dctype:Text"],
+    "chars": body['title']
+  }
+
+  open_annotation['hasTarget'] = {
+    "@id": "urn:uuid:" + target_uuid,
+    "@type": "oa:SpecificResource",
+    "hasSource": { "@id" : "http://search.idigbio.org/v2/view/records/" + target_uuid }
+  }
+
+  return open_annotation

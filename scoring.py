@@ -8,6 +8,7 @@ import annotation
 
 def scorePubs(pbdb, idigbio, threshold):
 
+  matches = []
   for idig in idigbio['items']:
   
     # Prep iDigBio fields for matching - these can be inconsistent
@@ -67,11 +68,14 @@ def scorePubs(pbdb, idigbio, threshold):
 
     
     # scoring seciton
-    for pb in pbdb:
+    for obj in pbdb:
 
      score = 0
-     ocr = pb['ocr'].lower()
      matchedOn = []
+     ocr = ""
+     if obj['ocr_text'] is not None:
+       ocr = obj['ocr_text'].lower()
+
 
      # Simple flat weighted
      if sciNameAuth in ocr:
@@ -125,8 +129,10 @@ def scorePubs(pbdb, idigbio, threshold):
 
      if threshold <= score:
     
-       print scientificName + " matched " + pb['tit']
+       print scientificName + " matched "
        print '[%s]' % ', '.join(map(str, matchedOn))
-       # Send off to Make annotations of matches
       
-       oa = annotation(idig, pb)
+       oa = annotation.create(idig, obj)
+       matches.append(oa)
+
+  return matches

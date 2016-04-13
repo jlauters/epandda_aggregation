@@ -5,20 +5,24 @@
 # This will serve as an API Wrapper for PBDB and BHL as well as attempt real time data merging
 
 import json, requests, re, unidecode
+from pymongo import MongoClient
 
 class PBDBBHL(object):
 
-  def __init__(self):
+  def __init__(self, search_term):
+    client = MongoClient("mongodb://localhost:27017")
+    db = client.test
+
     self.config = json.load(open('./config.json'))
     self.bhl_base_url = "http://www.biodiversitylibrary.org/api2/httpquery.ashx"
-    self.records = []
+    self.records = db.pbdb_ocr.find({"found_by":search_term})
 
   # Search for Taxonomic References by scientific/taxonomic name
   def taxa_references(self, base_name):
-    pbdb = requests.get('https://paleobiodb.org/data1.2/taxa/refs.json?base_name=' + order)
+    pbdb = requests.get('https://paleobiodb.org/data1.2/taxa/refs.json?base_name=' + base_name)
     if 200 == pbdb.status_code:
     
-      pbdb_json = json.loads( pbdb.contents )
+      pbdb_json = json.loads( pbdb.content )
       self.records = pbdb_json['records']
       return pbdb_json['records']
 
@@ -28,10 +32,12 @@ class PBDBBHL(object):
    if 200 == bhl.status_code:
      bhl_json = json.loads( bhl.content )
 
-     for bhl_title in bhl_json['Result']:
-       if title in bhl_title['FullTitle']:
-         return bhl_title
+     for bhltitle in bhl_json['Result']:
+       if title.lower() in bhltitle['FullTitle'].lower():
+         return bhltitle
         
+     return {}
+
   # Get BHL Title Items
   def bhl_items(self, title_id, vol, pub_year):
 
@@ -41,7 +47,7 @@ class PBDBBHL(object):
       items_json = json.loads( title_items.content )
       for item in items_json['Result']:
         if "v." + vol + " (" + pub_year + ")" in item['Volume']:
-          items.append( str(item['itemID']) )
+          items.append( str(item['ItemID']) )
 
       return items
 
@@ -93,9 +99,12 @@ class PBDBBHL(object):
           pub_year = pb['pby']
 
         bhl_title = self.bhl_title( pb['pbt'] ) 
-        bhl_items = self.bhl_items( str(bhl_title['TitleID']), volume, pub_year ) 
-        bhl_ocr   = self.bhl_ocr( bhl_items, pb['tit'])
 
-        pb_ocr.append({"pb": pb, "ocr": bhl_ocr})
+        if "TitleID" in bhl_title:
+          bhl_items = self.bhl_items( str(bhl_title['TitleID']), volume, pub_year ) 
+          bhl_ocr   = self.bhl_ocr( bhl_items, pb['tit'])
+
+          if bhl_ocr is not None:
+            pb_ocr.append({"pb": pb, "doi":"", "ocr": bhl_ocr})
     
     return pb_ocr

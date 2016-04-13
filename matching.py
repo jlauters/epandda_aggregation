@@ -5,13 +5,12 @@
 
 from pbdbbhl import PBDBBHL
 import idigbio
+import scoring
 
 def matchName( scientific_name ):
 
   # PBDB with BHL OCR Text query
-  pbdb = PBDBBHL()
-  pbdb.taxa_references( scientific_name )
-  ocr_matches = pbdb.references_bhl()
+  pbdb = PBDBBHL( scientific_name )
 
   # Python client for iDigBio
   api = idigbio.json()
@@ -22,6 +21,7 @@ def matchName( scientific_name ):
     record_list = api.search_records(rq={"order": scientific_name})
 
   # Run through scoring algorithm
+  return scoring.scorePubs(pbdb.records, record_list, 3) 
 
 
 def matchJournal( journal ):

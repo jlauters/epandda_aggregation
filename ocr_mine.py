@@ -20,20 +20,27 @@ db = client.test
 
 # Variable inits
 pbdb_titles = []
-order    = "coleoptera"
+base_name    = "coleoptera"
 bhl_base = "http://www.biodiversitylibrary.org/api2/httpquery.ashx"
 bhl_key = config['bhl_key'] 
 
 # Step One - Get Bib References from PBDB for order
-pbdb = requests.get('https://paleobiodb.org/data1.2/taxa/refs.json?base_name=' + order + '&textresult')
+pbdb = requests.get('https://paleobiodb.org/data1.2/taxa/refs.json?base_name=' + base_name)
 if 200 == pbdb.status_code:
 
   pbdb_json = json.loads( pbdb.content )
+
+  pbdb_count = len(pbdb_json['records'])
+  print "Returned " + str(pbdb_count) + " records from PBDB"
+
   for pb in pbdb_json['records']:
+
+    # Check if PBDB knows the DOI
+    doi = pb['doi'] if 'doi' in pb else ""
 
     # PBDB Data Objects do not have a consistent return format.
     # Checking if record has journal title and publication title before making BHL API Call
-    if pb.has_key("tit") and pb.has_key("pbt"):
+    if "tit" in pb and "pbt" in pb:
 
           # Step Two - Check if Publication is found in BHL
           bhl = requests.get(bhl_base + "?op=TitleSearchSimple&title=" + pb['pbt'] + "&apikey=" + bhl_key + "&format=json")
@@ -47,7 +54,7 @@ if 200 == pbdb.status_code:
                 title_items = requests.get(bhl_base + "?op=GetTitleItems&titleid=" + str( bhl_title['TitleID'] ) + "&apikey=" + bhl_key + "&format=json")
                 if 200 == title_items.status_code:
                   items_json = json.loads( title_items.content )
-         
+
                   for item in items_json['Result']:
                     if "v." + pb['vol'] + " (" + pb['pby'] + ")" in item['Volume']:
                       print "Volume match, get item metadata for " + str(item['ItemID'])
@@ -58,6 +65,9 @@ if 200 == pbdb.status_code:
                       if 200 == meta_items.status_code:
                         meta_json = json.loads( meta_items.content )
 
+                        external_url = meta_json['Result']['ExternalUrl']
+                        if doi is None and external_url is not None:
+                          doi = external_url
 
 
                         # Step Five - Iterate through the returned Pages for title item.
@@ -84,7 +94,8 @@ if 200 == pbdb.status_code:
                                 print "Found PBDB Title in OCR!!!!!!!"
                                 add_to_db = True
 
+
                         if add_to_db:
-                           print "Added Ocr to MongoDB"
-                           insert_oid = pb['oid'].replace('ref:', '')
-                           result = db.pbdb_ocr.insert_one({"oid": insert_oid, "ocr_text": ocr_blob})
+                          print "Added Ocr to MongoDB"
+                          insert_oid = pb['oid'].replace('ref:', '')
+                          result = db.pbdb_ocr.insert_one({"oid": insert_oid, "title": pb['tit'], "found_by": base_name, "doi": doi,  "ocr_text": ocr_blob})
