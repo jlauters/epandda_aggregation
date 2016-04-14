@@ -27,8 +27,8 @@ def create(target, body):
   open_annotation['@type'] = "oa:Annotation"
   open_annotation['annotatedAt'] = str(datestamp)
   open_annotation['annotatedBy'] = {
-    "@id": "ePANNDA Annotation Service ID", 
-    "@type": "foaf:Person",
+    "@id": "http://grab.by/PuPq", 
+    "@type": "foaf:Project",
     "mbox": { "@id": "mailto:annotation@epandda.org" },
     "name": "ePANDDA Annotation Bot"
   }
