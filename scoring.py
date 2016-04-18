@@ -6,68 +6,76 @@
 
 import annotation
 
+def init_fields(specimen):
+
+  ret = {}
+  
+  ret['sciNameAuth'] = ""
+  ret['sciNameAuthDate'] = ""
+  ret['identRemarks'] = ""
+  ret['biblioCitation'] = ""
+  ret['occurrenceRemark'] = ""
+  ret['associatedRef'] = ""
+  ret['identBy'] = ""
+  ret['recordedBy'] = ""
+  ret['eventDate'] = ""
+  ret['scientificName'] = ""
+  ret['order'] = ""
+  ret['stateProvince'] = ""
+  ret['locality'] = ""
+
+  if "dwc:scientificNameAuthorship" in specimen:
+    ret['sciNameAuth'] = specimen['dwc:scientificNameAuthorship'].lower()
+  
+    if ' ' in ret['sciNameAuth']:
+      sciNameParts = ret['sciNameAuth'].split()
+      ret['sciNameAuth']     = sciNameParts[0]
+      ret['scinameAuthDate'] = sciNameParts[1]
+
+  if "dwc:identificationRemarks" in specimen:
+    ret['identRemarks'] = specimen['dwc:identificationRemarks'].lower()
+
+  if "dcterms:bibliographicCitation" in specimen:
+    ret['biblioCitation'] = specimen['dcterms:bibliographicCitation'].lower()
+
+  if "dwc:occurrenceRemarks" in specimen:
+    ret['occurrenceRemark'] = specimen['dwc:occurrenceRemarks'].lower()
+
+  if "dwc:associatedReferences" in specimen:
+    ret['associatedRef'] = specimen['dwc:associatedReferences'].lower()
+
+  if "dwc:identificationReferences" in specimen:
+    ret['identRef'] = specimen['dwc:identificationReferences'].lower()
+
+  if "dwc:recordedBy" in specimen:
+    ret['recordedBy'] = specimen['dwc:recordedBy'].lower()
+
+  if "dwc:eventDate" in specimen:
+    ret['eventDate'] = specimen['dwc:eventDate'].lower()
+
+  if "dwc:scientificName" in specimen:
+    ret['scientificName'] = specimen['dwc:scientificName'].lower()
+
+  if "dwc:order" in specimen:
+    ret['order'] = specimen['dwc:order'].lower()
+
+  if "dwc:stateProvince" in specimen:
+    ret['stateProvince'] = specimen['dwc:stateProvince'].lower()
+
+  if "dwc:locality" in specimen:
+    ret['locality'] = specimen['dwc:locality'].lower()
+
+  return ret
+
 def scorePubs(pbdb, idigbio, threshold):
 
   matches = []
   for idig in idigbio['items']:
-  
+
     # Prep iDigBio fields for matching - these can be inconsistent
-    sciNameAuth     = ""
-    sciNameAuthDate = ""
-    if "dwc:scientificNameAuthorship" in idig['data']:
-      sciNameAuth = idig['data']['dwc:scientificNameAuthorship'].lower()
-
-      if ' ' in sciNameAuth:
-        sciNameParts    = sciNameAuth.split()
-        sciNameAuth     = sciNameParts[0]
-        sciNameAuthDate = sciNameParts[1]
+    specimen = init_fields( idig['data'] )
     
-    identRemarks = ""
-    if "dwc:identificationRemarks" in idig['data']:
-      identRemarks = idig['data']['dwc:identificationRemarks'].lower()
-
-    biblioCitation = ""
-    if "dcterms:bibliographicCitation" in idig['data']:
-      biblioCitation = idig['data']['dcterms:bibliographicCitation'].lower()
-
-    occurrenceRemark = ""
-    if "dwc:occurrenceRemarks" in idig['data']:
-      occurrenceRemark = idig['data']['dwc:occurrenceRemarks'].lower()
-
-    associatedRef = ""
-    if "dwc:associatedReferences" in idig['data']:
-      associatedRef = idig['data']['dwc:associatedReferences'].lower()
-
-    identRef = ""
-    if "dwc:identificationReferences" in idig['data']:
-      identRef = idig['data']['dwc:identificationReferences'].lower()
-
-    recordedBy = ""
-    if "dwc:recordedBy" in idig['data']:
-      recordedBy = idig['data']['dwc:recordedBy'].lower()
-
-    eventDate = ""
-    if "dwc:eventDate" in idig['data']:
-      eventDate = idig['data']['dwc:eventDate'].lower()
-
-    scientificName = ""
-    if "dwc:scientificName" in idig['data']:
-      scientificName = idig['data']['dwc:scientificName'].lower()
-
-    order = ""
-    if "dwc:order" in idig['data']:
-      order = idig['data']['dwc:order'].lower()
-
-    stateProvince = ""
-    if "dwc:stateProvince" in idig['data']:
-      stateProvince = idig['data']['dwc:stateProvince'].lower()
-
-    locality = ""
-    if "dwc:locality" in idig['data']:
-      locality = idig['data']['dwc:locality'].lower()
-
-    
-    # scoring seciton
+    # scoring section
     for obj in pbdb:
 
      score = 0
