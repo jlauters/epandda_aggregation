@@ -19,6 +19,14 @@ API Skeleton
 #### process_ocr.py
 Attemp to run Ocr Text through TF/IDF compared to terms in iDigBio Data ( DWC )
 
+Vocabulary:
+```
+[ 
+  'sciNameAuth', 'sciNameAuthDate', 'identRemarks', 'biblioCitation', 'occurrenceRemark', 'associatedRef', 'identBy',
+  'recordedBy', 'eventDate', 'scientificName', 'order', 'stateProvince', 'locality'
+]
+```
+
 Example Output:
 ```
 IDF:  [ 1.30918828  3.93385687  1.          1.          1.01069529  1.01069529
