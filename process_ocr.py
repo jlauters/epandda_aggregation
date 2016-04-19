@@ -4,6 +4,7 @@
 
 from pymongo import MongoClient
 from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer
 import json, requests
 
 # Init idigBio specimen fields
@@ -60,6 +61,9 @@ for item in items:
   print vectorizer.vocabulary
 
   smatrix = vectorizer.transform(test_set)
-  print "smatrixline: "
-  print smatrix
+
+  tfidf = TfidfTransformer(norm="l2")
+  tfidf.fit(smatrix)
+
+  print "IDF: ", tfidf.idf_
 
