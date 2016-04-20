@@ -12,6 +12,7 @@ def init_fields(specimen):
   
   ret['sciNameAuth'] = ""
   ret['sciNameAuthDate'] = ""
+  ret['specificEpithet'] = ""
   ret['identRemarks'] = ""
   ret['biblioCitation'] = ""
   ret['occurrenceRemark'] = ""
@@ -19,10 +20,12 @@ def init_fields(specimen):
   ret['identBy'] = ""
   ret['recordedBy'] = ""
   ret['eventDate'] = ""
+  ret['dateItentified'] = ""
   ret['scientificName'] = ""
   ret['order'] = ""
   ret['stateProvince'] = ""
   ret['locality'] = ""
+  ret['formation'] = ""
 
   if "dwc:scientificNameAuthorship" in specimen:
     ret['sciNameAuth'] = specimen['dwc:scientificNameAuthorship'].lower()
@@ -44,14 +47,25 @@ def init_fields(specimen):
   if "dwc:associatedReferences" in specimen:
     ret['associatedRef'] = specimen['dwc:associatedReferences'].lower()
 
+  if "dwc:specificEpithet" in specimen:
+    ret['specificEpithet'] = specimen['dwc:specificEpithet'].lower()
+
   if "dwc:identificationReferences" in specimen:
     ret['identRef'] = specimen['dwc:identificationReferences'].lower()
 
   if "dwc:recordedBy" in specimen:
-    ret['recordedBy'] = specimen['dwc:recordedBy'].lower()
+    cleaned = specimen['dwc:recordedBy'].lower().split(',')
+    ret['recordedBy'] = cleaned[0]
+
+  if "dwc:identifiedBy" in specimen:
+    cleaned = specimen['dwc:identifiedBy'].lower().split(',')
+    ret['identBy'] = cleaned[0]
 
   if "dwc:eventDate" in specimen:
     ret['eventDate'] = specimen['dwc:eventDate'].lower()
+
+  if "dwc:dateIdentified" in specimen:
+    ret['dateItendified'] = specimen['dwc:dateIdentified'].lower()
 
   if "dwc:scientificName" in specimen:
     ret['scientificName'] = specimen['dwc:scientificName'].lower()
@@ -64,6 +78,9 @@ def init_fields(specimen):
 
   if "dwc:locality" in specimen:
     ret['locality'] = specimen['dwc:locality'].lower()
+
+  if "dwc:formation" in specimen:
+    ret['formation'] = specimen['dwc:formation'].lower()
 
   return ret
 
@@ -85,6 +102,7 @@ def scorePubs(pbdb, idigbio, threshold):
        ocr = obj['ocr_text'].lower()
 
 
+     # TODO: This might go away in favor if TF/IDF
      # Simple flat weighted
      if sciNameAuth in ocr:
        score += 1
@@ -97,6 +115,10 @@ def scorePubs(pbdb, idigbio, threshold):
      if recordedBy in ocr:
        score += 1
        matchedOn.append(" Recorded by")
+
+     if identBy in ocr:
+       score += 1
+       matchedOn.append(" Identified by")
 
      if biblioCitation in ocr:
        score += 1
