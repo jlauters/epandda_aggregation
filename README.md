@@ -17,21 +17,49 @@ Discovery script to look into feasability of doing data aggregation by person na
 API Skeleton
 
 #### process_ocr.py
-Attemp to run Ocr Text through TF/IDF compared to terms in iDigBio Data ( DWC )
 
-Vocabulary:
+Run on known hand verified match
+
+http://search.idigbio.org/v2/view/records/c32288e2-cfba-447e-8491-5b82288a51f2
+https://paleobiodb.org/data1.1/refs/single.json?id=5172&show=both
+
 ```
-[ 
-  'sciNameAuth', 'sciNameAuthDate', 'identRemarks', 'biblioCitation', 'occurrenceRemark', 'associatedRef', 'identBy',
-  'recordedBy', 'eventDate', 'scientificName', 'order', 'stateProvince', 'locality'
-]
+[5172] Title: New Miocene Coleoptera from Florissant
+Specimen ID: c32288e2-cfba-447e-8491-5b82288a51f2
+
+Vocabulary: 
+{u'florissant': 7, u'cockerell': 4, u'colorado': 6, u'17': 0, u'abyssa': 2, u'coleoptera': 5, u'wickham': 8, u'acmaeodera': 3, u'1912': 1}
+
+BOW:
+  (1, 0)	1
+  (1, 4)	1
+  (2, 2)	1
+  (3, 6)	1
+  (5, 7)	1
+  (6, 8)	1
+  (9, 2)	1
+  (9, 3)	1
+  (10, 1)	1
+  (12, 4)	1
+  (13, 5)	1
+
+BOW Shape:
+(17, 9)
+
+IDF:  [ 1.  1.  1.  1.  1.  1.  1.  1.  1.]
+
+Term Breakdown: 
+specificEpithet - abyssa - 1.0
+stateProvince - colorado - 1.0
+formation - florissant - 1.0
+identBy - wickham - 1.0
+dateItendified - 1912 - 1.0
+recordedBy - cockerell - 1.0
+order - coleoptera - 1.0
+
+
+ ==== End Record ==== 
+
+
 ```
 
-Example Output:
-```
-IDF:  [ 1.30918828  3.93385687  1.          1.          1.01069529  1.01069529
-  1.32378708  1.80562516  1.22580667  1.43242092  1.46575734  5.54329478
-  1.90570862  1.17384693  1.33860216  2.24745792  1.          3.59738463
-  4.44468249  1.19948936  3.75153531  1.29479954  1.73663229  1.22580667
-  4.15700042]
-```
