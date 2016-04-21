@@ -20,8 +20,6 @@ config = json.load(open('./config.json'))
 client = MongoClient("mongodb://localhost:27017")
 db = client.test
 
-# Next time search for coleoptera
-
 # Variable inits
 pbdb_titles = []
 insert_count = 0
