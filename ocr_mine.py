@@ -20,10 +20,12 @@ config = json.load(open('./config.json'))
 client = MongoClient("mongodb://localhost:27017")
 db = client.test
 
+# Next time search for coleoptera
+
 # Variable inits
 pbdb_titles = []
 insert_count = 0
-base_name    = "cetacea"
+base_name    = "coleoptera"
 bhl_base = "http://www.biodiversitylibrary.org/api2/httpquery.ashx"
 bhl_key = config['bhl_key'] 
 
@@ -190,5 +192,9 @@ for pb in pubs:
             if add_to_db:
               insert_count += 1
               print "Added " + str(insert_count) + " Ocr to MongoDB"
+
               insert_oid = pb['oid'].replace('ref:', '')
+              if "39330" is insert_oid:
+                doi = "http://dx.doi.org/10.1155/1917/83242"
+
               result = db.pbdb_ocr.insert_one({"oid": insert_oid, "title": pb['tit'], "found_by": base_name, "doi": doi,  "ocr_text": ocr_blob})
