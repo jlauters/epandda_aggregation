@@ -22,8 +22,8 @@ def create(target, body):
   # TODO: Determine if we need to also push this into a mongoDB? Maybe a flag on the constructor?
 
   open_annotation = {}
-  open_annotation['@context'] = "https://www.w3.org/ns/oa.jsonld" 
-  open_annotation['@id'] = str(anno_uuid)
+  open_annotation['@context'] = ["https://www.w3.org/ns/oa.jsonld", {"dwc": "http://rs.tdwg.org/dwc/terms/"}] 
+  open_annotation['@id'] = "https://epandda.org/annotations/" + str(anno_uuid)
   open_annotation['@type'] = "oa:Annotation"
   open_annotation['annotatedAt'] = str(datestamp)
   open_annotation['annotatedBy'] = {
@@ -34,9 +34,10 @@ def create(target, body):
   }
  
   open_annotation['hasBody'] = {
-    "@id": body['doi'],
-    "@type": ["dwc:Occurrence", "dctype:Text"],
-    "chars": body['title']
+    "! cnt:chars": "{\"dwc:occurrenceRemarks\": " + body['title'] + "}",
+    "@id": "https://epannda.org/annotation_body/" + body['doi'],
+    "@type": ["dwc:Occurrence", "cnt:ContentAsText"],
+    "dc:format": "application/json"
   }
 
   open_annotation['hasTarget'] = {
