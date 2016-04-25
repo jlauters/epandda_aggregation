@@ -22,7 +22,7 @@ def create(target, body):
   # TODO: Determine if we need to also push this into a mongoDB? Maybe a flag on the constructor?
 
   open_annotation = {}
-  open_annotation['@context'] = "http://www.w3.org/ns/oa-context-20130208.json" 
+  open_annotation['@context'] = "https://www.w3.org/ns/oa.jsonld" 
   open_annotation['@id'] = str(anno_uuid)
   open_annotation['@type'] = "oa:Annotation"
   open_annotation['annotatedAt'] = str(datestamp)
