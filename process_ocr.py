@@ -6,17 +6,28 @@ from pymongo import MongoClient
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 import json, requests
+import string
+import editdistance
 
 # Init idigBio specimen fields
 import scoring 
+
+def normalize(s):
+  for p in string.punctuation:
+    if "-" == p:
+      s = s.replace(p, ' ')
+    else:
+      s = s.replace(p, '')
+
+  return s.lower().strip()
 
 vectorizer = CountVectorizer()
 client = MongoClient("mongodb://localhost:27017")
 db = client.test
 
 # Get All OCR
-#records = db.pbdb_ocr.find({"found_by": "coleoptera"})
-records = db.pbdb_ocr.find({"oid":"5172"})
+records = db.pbdb_ocr.find({"found_by": "coleoptera"})
+#records = db.pbdb_ocr.find({"oid":"5172"})
 #records = db.pbdb_ocr.find_one()
 
 def getSpecimen():
@@ -37,55 +48,67 @@ def getSpecimens():
 
     return idigbio_json['items']
 
-#items = getSpecimens()
-items = getSpecimen()
-
-train_set = []
-#for item in items:
-#  specimen = scoring.init_fields(item['data'])
-#  values = specimen.values()
-#  train_set.append( " ".join(values) )
-
-  # TF / IDF between iDigBio Specimen and OCR Text Body
+items = getSpecimens()
+#items = getSpecimen()
 
 # Test Set - OCR Documents ( currently Journals, hopefully someday articles ) 
+train_set = []
 test_set = []
 for record in records:
   print "[" + record['oid'] + "] Title: " + record['title']
+  train_set.append( record['ocr_text'] )
   test_set.append( record['ocr_text'] )
 
-  for item in items:
-    print "Specimen ID: " + str(item['uuid'])
-    specimen = scoring.init_fields( item['data'] )
-    values = specimen.values()
+  #for item in items:
+  #  print "Specimen ID: " + str(item['uuid'])
+  #  specimen = scoring.init_fields( item['data'] )
+  #  values = specimen.values()
    
-    for val in values:
-      train_set.append(val)
+  #  for val in values:
+  #    train_set.append(val)
 
 
-    vectorizer.fit(train_set)
-    #print "Vocabulary length: "
-    #print len(vectorizer.vocabulary_)
+  vectorizer.fit(train_set)
+  #print "Vocabulary length: "
+  #print len(vectorizer.vocabulary_)
 
-    print "Vocabulary: "
-    print vectorizer.vocabulary_
+  #print "Vocabulary: "
+  #print vectorizer.vocabulary_
 
-    bow = vectorizer.transform(train_set)
-    print "BOW:"
-    print bow
-    print "BOW Shape:"
-    print bow.shape
+  for test in test_set:
+    bow = vectorizer.transform(test)
+    #print "BOW:"
+    #print bow
+    #print "BOW Shape:"
+    #print bow.shape
 
-    smatrix = vectorizer.transform(test_set)
+    smatrix = vectorizer.transform(test)
 
     tfidf = TfidfTransformer(norm="l2")
     tfidf.fit(smatrix)
     print "IDF: ", tfidf.idf_
 
-    print "Term Breakdown: "
-    for key, value in specimen.iteritems():
-      if value in vectorizer.vocabulary_:
-         print key + " - " + value + " - " + str(tfidf.idf_[vectorizer.vocabulary_[value]])
+    for item in items:
+      specimen = scoring.init_fields(item['data'])
 
-    print "\n"
-  print " ==== End Record ==== \n\n"
+      spec_count = len( specimen )
+      term_match = 0
+      matched_on = []
+
+      print "Term Breakdown for specimen (" + str(item['uuid']) + "): "
+      for term in vectorizer.vocabulary_:
+
+        for key, value in specimen.iteritems():
+
+          clean_term  = normalize(term)
+          clean_value = normalize(value)
+          dist = editdistance.eval(clean_term, clean_value)
+
+          if term == value or dist < 5:
+            term_match += 1
+            if key not in matched_on:
+              matched_on.append( key )
+
+    if term_match >= 10:
+      print "Specimen matches!"
+      print ", ".join(matched_on)

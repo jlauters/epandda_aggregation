@@ -18,6 +18,7 @@ def init_fields(specimen):
   ret['occurrenceRemark'] = ""
   ret['associatedRef'] = ""
   ret['identBy'] = ""
+  ret['identRef'] = ""
   ret['recordedBy'] = ""
   ret['eventDate'] = ""
   ret['dateItentified'] = ""
@@ -104,62 +105,62 @@ def scorePubs(pbdb, idigbio, threshold):
 
      # TODO: This might go away in favor if TF/IDF
      # Simple flat weighted
-     if sciNameAuth in ocr:
+     if specimen['sciNameAuth'] in ocr:
        score += 1
        matchedOn.append(" Scientific Name Authorship")
 
-     if identRemarks in ocr:
+     if specimen['identRemarks'] in ocr:
        score += 1
        matchedOn.append(" Identification Remarks")
 
-     if recordedBy in ocr:
+     if specimen['recordedBy'] in ocr:
        score += 1
        matchedOn.append(" Recorded by")
 
-     if identBy in ocr:
+     if specimen['identBy'] in ocr:
        score += 1
        matchedOn.append(" Identified by")
 
-     if biblioCitation in ocr:
+     if specimen['biblioCitation'] in ocr:
        score += 1
        matchedOn.append(" Bibliographic Citation")
 
-     if eventDate in ocr:
+     if specimen['eventDate'] in ocr:
        score += 1
        matchedOn.append(" Event Date")
 
-     if occurrenceRemark in ocr:
+     if specimen['occurrenceRemark'] in ocr:
        score += 1
        matchedOn.append(" Occurrence Remarks")
 
-     if associatedRef in ocr:
+     if specimen['associatedRef'] in ocr:
        score += 1
        matchedOn.append(" Associated References")
 
-     if identRef in ocr:
+     if specimen['identRef'] in ocr:
        score += 1
        matchedOn.append(" Identification Remarks")
  
-     if scientificName in ocr:
+     if specimen['scientificName'] in ocr:
        score += 1
        matchedOn.append(" Scientific Name")
 
-     if order in ocr:
+     if specimen['order'] in ocr:
        score += 1
        matchedOn.append(" Taxonomic Order")
 
-     if stateProvince in ocr:
+     if specimen['stateProvince'] in ocr:
        score += 1
        matchedOn.append(" State/Province")
 
-     if locality in ocr:
+     if specimen['locality'] in ocr:
        score += 1
        matchedOn.append(" Locality")
  
 
      if threshold <= score:
     
-       print scientificName + " matched "
+       print specimen['scientificName'] + " matched "
        print '[%s]' % ', '.join(map(str, matchedOn))
       
        oa = annotation.create(idig, obj)
