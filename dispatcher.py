@@ -111,5 +111,9 @@ def person():
   else:
     return "Missing Required Params"
 
+@app.errorhandler(404)
+def page_not_found(e):
+  return "404 - No PANDDAS Here"
+
 if __name__ == '__main__':
   app.run( debug = True )
