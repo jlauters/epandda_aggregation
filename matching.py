@@ -4,6 +4,7 @@
 #
 
 from pbdbbhl import PBDBBHL
+from pbdbbhl import taxa_by_ref
 import idigbio
 import scoring
 
@@ -23,6 +24,14 @@ def matchName( scientific_name ):
   # Run through scoring algorithm
   return scoring.scorePubs(pbdb.records, record_list, 3) 
 
+def matchFull( search_name ):
+
+  print "in matchFull: search_name = " + search_name
+
+  # PBDB Taxa By Refs with Joined Reference info
+  pbdb = taxa_by_ref( search_name ) 
+
+  return pbdb
 
 def matchJournal( journal ):
   # Kick Off Search to PBDB+BHL

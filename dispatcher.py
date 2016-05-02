@@ -55,7 +55,7 @@ def publication():
     matches = matching.matchName( search_term )
 
     retval = {}
-    retval['status'] = "okay"
+    retval['status']  = "okay"
     retval['results'] = matches
 
     resp = Response(response=json.dumps(retval), status=200, mimetype="application/json")
@@ -67,6 +67,27 @@ def publication():
     return "Required Params Missing!"
 
 
+# Full PBDB Taxonomy By Reference -- Fill in the missing step of combining the two queries to gif Biblio Reference with associated Taxa info.
+@app.route("/api/v1/fulltaxabyref", methods=['GET'])
+def fullTaxaByRef():
+
+  # TODO - I think this data would be better served being dumped into lookup table ref:oid => many nam's check search term against these, then pull the oid.
+
+  # required
+  search_term = request.args.get('search_term')
+
+  if search_term:
+    matches = matching.matchFull( search_term )
+
+    retval = {}
+    retval['status']  = "okay"
+    retval['results'] = matches
+
+    resp = Response(response=json.dumps(retval), status=200, mimetype="application/json")
+    return resp
+
+  else:
+    return "Required Params Missing!"
 
 # Fossil / Modern specimen matching based on taxonomic heirarchy
 @app.route("/api/v1/fossilmodern", methods=['GET'])

@@ -7,6 +7,31 @@
 import json, requests, re, unidecode
 from pymongo import MongoClient
 
+# Search Taxa by Reference
+def taxa_by_ref(base_name):
+
+  print "searching: " + base_name
+
+  retval = []
+
+  pbdb = requests.get('https://paleobiodb.org/data1.2/taxa/byref.json?base_name=' + base_name + '&ref_type=all&limit=300')
+  if 200 == pbdb.status_code:
+    
+    pbdb_json = json.loads( pbdb.content )
+    records = pbdb_json['records']
+
+    # get single Ref Data for each result.     
+    for record in records:
+        ref_id = record['rid'].replace("ref:", "")
+        
+        reference = requests.get('https://paleobiodb.org/data1.1/refs/single.json?id=' + str(ref_id) + '&show=both')
+        if 200 == reference.status_code:
+      
+          ref_json = json.loads( reference.content )
+          retval.append({"taxa": record, "ref": ref_json['records']})
+
+  return retval
+
 class PBDBBHL(object):
 
   def __init__(self, search_term):
@@ -25,6 +50,10 @@ class PBDBBHL(object):
       pbdb_json = json.loads( pbdb.content )
       self.records = pbdb_json['records']
       return pbdb_json['records']
+
+  
+
+
 
   # Get BHL titles 
   def bhl_title(self, title):

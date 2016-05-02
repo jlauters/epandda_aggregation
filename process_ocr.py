@@ -112,3 +112,5 @@ for record in records:
     if term_match >= 10:
       print "Specimen matches!"
       print ", ".join(matched_on)
+
+      result = db.epandda_match.insert_one({"oid": record['oid'], "uuid": item['uuid']})
